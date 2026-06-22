@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catalog Autofill — efood</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f7f8;
+    --card: #ffffff;
+    --text: #0f0f0f;
+    --text-light: #58585c;
+    --text-faint: #8a8a90;
+    --border: #e4e4e7;
+    --border-strong: #d4d4d8;
+    --gold: #f5b800;
+    --green: #15803d;
+    --green-bg: #f0fdf4;
+    --green-border: #bbf7d0;
+    --amber: #b45309;
+    --amber-bg: #fffbeb;
+    --amber-border: #fcd34d;
+    --red: #b91c1c;
+    --red-bg: #fef2f2;
+    --red-border: #fca5a5;
+    --blue: #1d4ed8;
+    --blue-bg: #eff6ff;
+    --blue-border: #bfdbfe;
+    --indigo: #4338ca;
+    --indigo-bg: #eef2ff;
+    --indigo-border: #c7d2fe;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 20px 60px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .wrap { max-width: 940px; margin: 0 auto; }
+
+  /* ---- HEADER ---- */
+  .header { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .header-icon {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: #fff; border: 1px solid var(--border-strong);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    font-size: 16px;
+  }
+  .header h1 { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; }
+  .header-sub { color: var(--text-light); font-size: 13.5px; margin: 0 0 26px 46px; }
+
+  /* ---- CARD ---- */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 14px;
+  }
+
+  /* ---- FORM ELEMENTS ---- */
+  label.field-label {
+    display: block;
+    font-size: 11.5px; font-weight: 700;
+    color: var(--text-light);
+    text-transform: uppercase; letter-spacing: .05em;
+    margin-bottom: 6px;
+  }
+  input[type=text], input[type=password], textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 14px;
+    color: var(--text);
+    background: #fff;
+    transition: border-color .15s;
+    outline: none;
+  }
+  input[type=text]:focus, input[type=password]:focus, textarea:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px #f5b80022;
+  }
+  textarea { resize: vertical; }
+
+  /* ---- DROP ZONE ---- */
+  .dropzone {
+    border: 1.5px dashed var(--border-strong);
+    border-radius: 13px;
+    padding: 30px 16px;
+    text-align: center;
+    cursor: pointer;
+    background: #fafafa;
+    transition: all .15s;
+    user-select: none;
+  }
+  .dropzone:hover, .dropzone.over {
+    border-color: var(--gold);
+    background: #fffdf5;
+  }
+  .dropzone .dz-icon { font-size: 28px; margin-bottom: 8px; display: block; }
+  .dropzone .dz-title { font-size: 14.5px; font-weight: 600; }
+  .dropzone .dz-sub { font-size: 12px; color: var(--text-light); margin-top: 4px; }
+
+  /* ---- THUMBS ---- */
+  .thumbs { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .thumb { position: relative; width: 78px; }
+  .thumb img { width: 78px; height: 78px; object-fit: cover; border-radius: 9px; border: 1px solid var(--border-strong); display: block; }
+  .thumb-name { font-size: 9.5px; color: var(--text-light); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .thumb-remove {
+    position: absolute; top: -6px; right: -6px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #fff; border: 1px solid var(--border-strong);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: var(--text-light);
+  }
+  .thumb-remove:hover { color: var(--red); }
+
+  /* ---- BUTTON ---- */
+  .btn-primary {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 13px;
+    border: none; border-radius: 10px;
+    background: var(--text); color: #fff;
+    font-family: inherit; font-size: 14.5px; font-weight: 700;
+    cursor: pointer; transition: opacity .15s;
+    margin-top: 20px;
+  }
+  .btn-primary:disabled { background: #e4e4e7; color: #a1a1aa; cursor: not-allowed; }
+  .btn-primary:not(:disabled):hover { opacity: .88; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 12px; border-radius: 9px;
+    border: 1px solid var(--border-strong);
+    background: #fff; color: var(--text);
+    font-family: inherit; font-size: 12.5px; font-weight: 500;
+    cursor: pointer;
+  }
+  .btn:hover { background: var(--bg); }
+  .btn.active { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-border); font-weight: 600; }
+
+  .btn-save {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 18px; border-radius: 9px;
+    border: none; background: var(--green); color: #fff;
+    font-family: inherit; font-size: 13.5px; font-weight: 700;
+    cursor: pointer;
+  }
+  .btn-save:hover { opacity: .88; }
+  .btn-save:disabled { background: #d1fae5; cursor: not-allowed; }
+
+  /* ---- ALERTS ---- */
+  .alert {
+    display: flex; gap: 8px; align-items: flex-start;
+    padding: 11px 13px; border-radius: 9px;
+    font-size: 12.5px; margin-top: 14px;
+  }
+  .alert.error { background: var(--red-bg); color: var(--red); }
+  .alert.success { background: var(--green-bg); color: var(--green); }
+
+  /* ---- SUMMARY BAR ---- */
+  .summary-bar {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 16px; margin-bottom: 14px;
+  }
+  .summary-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .summary-stats { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+  .stat-block { display: flex; align-items: baseline; gap: 5px; }
+  .stat-n { font-size: 18px; font-weight: 800; letter-spacing: -.02em; }
+  .stat-l { font-size: 12px; color: var(--text-light); }
+  .divider-v { width: 1px; height: 20px; background: var(--border); }
+  .summary-actions { display: flex; gap: 7px; flex-wrap: wrap; }
+
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 13px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 11px; border-radius: 20px;
+    font-size: 12px; font-weight: 600; border: 1px solid;
+  }
+  .chip.error { background: var(--red-bg); color: var(--red); border-color: var(--red-border); }
+  .chip.warn  { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-border); }
+  .chip.info  { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-border); }
+  .chip.ok    { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
+
+  /* ---- CONTROLS ---- */
+  .controls { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+  .search-wrap { position: relative; flex: 1; min-width: 200px; }
+  .search-wrap input { padding-left: 32px; }
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-faint); font-size: 13px; pointer-events: none; }
+
+  /* ---- CATEGORY ---- */
+  .cat-block { background: var(--card); border: 1px solid var(--border); border-radius: 13px; margin-bottom: 12px; overflow: hidden; }
+  .cat-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 16px; cursor: pointer;
+    background: #fafafa; border-bottom: 1px solid var(--border);
+    user-select: none;
+  }
+  .cat-header.collapsed { border-bottom: none; }
+  .cat-header-left { display: flex; align-items: center; gap: 9px; flex: 1; min-width: 0; }
+  .cat-chevron { font-size: 13px; color: var(--text-light); flex-shrink: 0; }
+  .cat-name-input {
+    font-size: 15px; font-weight: 700;
+    border: none; background: transparent; font-family: inherit;
+    color: var(--text); outline: none;
+  }
+  .cat-count { font-size: 11.5px; color: var(--text-faint); }
+  .cat-flag { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; padding: 2px 8px; border-radius: 20px; background: var(--amber-bg); color: var(--amber); font-weight: 700; }
+  .cat-actions { display: flex; gap: 4px; }
+  .icon-btn { border: none; background: transparent; cursor: pointer; color: var(--text-light); padding: 4px; font-size: 14px; }
+  .icon-btn:hover { color: var(--red); }
+
+  .cat-body { padding: 0 16px; }
+
+  /* ---- ITEM ROW ---- */
+  .item-row {
+    border-top: 1px solid var(--border);
+    padding: 12px 0 12px 13px;
+    margin-left: -16px;
+    border-left: 3px solid transparent;
+  }
+  .item-row.sev-error { border-left-color: var(--red); background: #fef2f205; }
+  .item-row.sev-warn  { border-left-color: var(--amber); background: #fffbeb40; }
+  .item-row.sev-info  { border-left-color: var(--blue); }
+
+  .item-main { display: flex; gap: 10px; align-items: flex-start; }
+  .item-left { flex: 1; min-width: 0; }
+  .item-name-input {
+    width: 100%; font-size: 13.5px; font-weight: 600;
+    border: none; background: transparent; font-family: inherit;
+    color: var(--text); outline: none; padding: 2px 0;
+  }
+  .item-desc { font-size: 12px; color: var(--text-light); margin-top: 2px; line-height: 1.4; }
+
+  .badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10.5px; font-weight: 600; padding: 2px 7px;
+    border-radius: 6px; border: 1px solid;
+  }
+  .badge.error { background: var(--red-bg); color: var(--red); border-color: var(--red-border); }
+  .badge.warn  { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-border); }
+  .badge.info  { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-border); }
+
+  .item-notes { font-size: 11.5px; color: var(--text-light); margin-top: 6px; display: flex; gap: 5px; font-style: italic; }
+
+  .opts-toggle {
+    display: inline-flex; align-items: center; gap: 5px;
+    margin-top: 8px; padding: 3px 10px; border-radius: 7px;
+    background: var(--indigo-bg); color: var(--indigo);
+    border: 1px solid var(--indigo-border);
+    font-family: inherit; font-size: 11.5px; font-weight: 600;
+    cursor: pointer;
+  }
+  .opts-body { margin-top: 8px; padding-left: 12px; border-left: 2px solid var(--border); }
+  .opt-group { margin-bottom: 9px; }
+  .opt-group-title { font-size: 11.5px; font-weight: 600; color: var(--text-light); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .opt-type-badge {
+    font-size: 9.5px; padding: 1px 7px; border-radius: 20px; font-weight: 700;
+  }
+  .opt-type-badge.required { background: var(--indigo-bg); color: var(--indigo); }
+  .opt-type-badge.optional { background: var(--green-bg); color: var(--green); }
+  .opt-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .opt-pill { font-size: 11px; background: #fafafa; border: 1px solid var(--border); border-radius: 7px; padding: 3px 9px; }
+
+  .item-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .price-wrap { display: flex; align-items: center; gap: 3px; }
+  .price-input {
+    width: 68px; font-size: 13px; padding: 6px 7px;
+    border-radius: 7px; border: 1px solid var(--border-strong);
+    font-family: inherit; text-align: right; font-weight: 600;
+    color: var(--text); outline: none;
+    background: #fff;
+  }
+  .price-input.missing { border-color: var(--red); }
+  .price-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px #f5b80022; }
+  .price-eur { font-size: 12px; color: var(--text-light); }
+  .resolve-btn {
+    width: 26px; height: 26px; border-radius: 7px;
+    border: 1px solid var(--green); background: var(--green-bg); color: var(--green);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0; font-size: 14px;
+  }
+
+  /* ---- JSON VIEWER ---- */
+  .json-viewer {
+    background: #0f0f0f; color: #d4d4d8;
+    padding: 16px; border-radius: 11px;
+    font-size: 11.5px; overflow-x: auto;
+    max-height: 360px; margin-bottom: 16px;
+    font-family: 'Fira Code', 'Cascadia Code', monospace;
+    white-space: pre;
+  }
+
+  /* ---- SAVE PANEL ---- */
+  .save-panel {
+    background: var(--card); border: 1px solid var(--green-border);
+    border-radius: 14px; padding: 18px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .save-panel-text h3 { font-size: 15px; font-weight: 700; }
+  .save-panel-text p { font-size: 12.5px; color: var(--text-light); margin-top: 3px; }
+
+  /* ---- EMPTY ---- */
+  .empty { padding: 14px 0; font-size: 12.5px; color: var(--text-faint); }
+
+  /* ---- TOAST ---- */
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: #0f0f0f; color: #fff;
+    padding: 12px 20px; border-radius: 10px;
+    font-size: 13.5px; font-weight: 500;
+    opacity: 0; transition: all .3s; pointer-events: none; z-index: 999;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.ok { background: var(--green); }
+  #toast.err { background: var(--red); }
+
+  /* ---- PASSWORD GATE ---- */
+  #gate {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; z-index: 100;
+  }
+  .gate-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 36px; max-width: 380px; width: 100%; text-align: center; }
+  .gate-card h2 { font-size: 18px; font-weight: 800; margin-bottom: 6px; }
+  .gate-card p { font-size: 13px; color: var(--text-light); margin-bottom: 22px; }
+
+  /* Spinner */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin { display: inline-block; animation: spin .7s linear infinite; }
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div id="gate">
+  <div class="gate-card">
+    <div style="font-size:28px;margin-bottom:12px;">✦</div>
+    <h2>Catalog Autofill</h2>
+    <p>efood · Τμήμα Καταλόγων</p>
+    <input type="password" id="gate-pw" placeholder="Κωδικός πρόσβασης" style="margin-bottom:12px;" onkeydown="if(event.key==='Enter')unlock()">
+    <button class="btn-primary" style="margin-top:0;" onclick="unlock()">Είσοδος</button>
+    <div id="gate-err" style="color:var(--red);font-size:12.5px;margin-top:10px;display:none;">Λάθος κωδικός</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="wrap" id="app" style="display:none;">
+
+  <div class="header">
+    <div class="header-icon">✦</div>
+    <h1>Αυτόματη Καταχώρηση Καταλόγου</h1>
+  </div>
+  <p class="header-sub">Ανέβασε ό,τι έστειλε ο vendor — το εργαλείο εξάγει δομημένο κατάλογο και επισημαίνει μόνο του τι χρειάζεται έλεγχο.</p>
+
+  <!-- UPLOAD FORM -->
+  <div id="upload-section">
+    <div class="card">
+      <label class="field-label">Όνομα καταστήματος (προαιρετικό)</label>
+      <input type="text" id="store-name" placeholder="π.χ. Nuevo Mundo" style="margin-bottom:18px;">
+
+      <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()">
+        <span class="dz-icon">☁</span>
+        <div class="dz-title">Σύρε εικόνες/αρχεία εδώ ή κάνε κλικ</div>
+        <div class="dz-sub">Εικόνες (jpg/png), .docx, .xlsx, .txt — πολλαπλά αρχεία ΟΚ</div>
+        <input type="file" id="file-input" multiple accept="image/*,.docx,.xlsx,.xls,.txt,.pdf" style="display:none" onchange="handleFiles(this.files)">
+      </div>
+
+      <div class="thumbs" id="thumbs"></div>
+
+      <label class="field-label" style="margin-top:20px;">Κείμενο / περιεχόμενο αρχείων</label>
+      <textarea id="menu-text" rows="6" placeholder="Επικόλλησε εδώ κείμενο μενού, ή θα γεμίσει αυτόματα όταν ανεβάσεις .docx/.xlsx/.txt"></textarea>
+
+      <div id="upload-error" class="alert error" style="display:none;"></div>
+
+      <button class="btn-primary" id="extract-btn" disabled onclick="runExtraction()">
+        Εξαγωγή καταλόγου
+      </button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-section" style="display:none;">
+
+    <!-- SAVE PANEL -->
+    <div class="save-panel" id="save-panel">
+      <div class="save-panel-text">
+        <h3>Έτοιμο για αποθήκευση;</h3>
+        <p>Ο κατάλογος θα αποθηκευτεί στη βάση δεδομένων ως νέα session.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn" onclick="exportJson()">⬇ Export JSON</button>
+        <button class="btn-save" id="save-btn" onclick="saveToDB()">💾 Αποθήκευση στη βάση</button>
+      </div>
+    </div>
+
+    <!-- SUMMARY BAR -->
+    <div class="summary-bar">
+      <div class="summary-top">
+        <div class="summary-stats">
+          <div class="stat-block"><span class="stat-n" id="s-cats">0</span><span class="stat-l">κατηγορίες</span></div>
+          <div class="divider-v"></div>
+          <div class="stat-block"><span class="stat-n" id="s-items">0</span><span class="stat-l">προϊόντα</span></div>
+          <div class="divider-v"></div>
+          <div class="stat-block"><span class="stat-n" id="s-opts">0</span><span class="stat-l">επιλογές</span></div>
+        </div>
+        <div class="summary-actions">
+          <button class="btn" id="json-toggle-btn" onclick="toggleJson()">{ } JSON</button>
+          <button class="btn" onclick="resetAll()">↺ Νέα εξαγωγή</button>
+        </div>
+      </div>
+      <div class="chips" id="health-chips"></div>
+    </div>
+
+    <div id="json-viewer-wrap" style="display:none;">
+      <div class="json-viewer" id="json-viewer"></div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="search-input" placeholder="Αναζήτηση προϊόντος..." oninput="renderResults()">
+      </div>
+      <button class="btn" id="filter-btn" onclick="toggleFilter()">▼ Όλα τα προϊόντα</button>
+      <button class="btn" onclick="addCategory()">+ Κατηγορία</button>
+    </div>
+
+    <!-- CATALOG -->
+    <div id="catalog-root"></div>
+
+    <div id="extract-error" class="alert error" style="display:none;margin-top:14px;"></div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ============================================================
+//  CONFIG
+// ============================================================
+const GATE_PASSWORD = 'efood2025';
+const SUPABASE_URL  = 'https://gxrybwnufjhoymsclxla.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4cnlid251Zmpob3ltc2NseGxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMzg0NzksImV4cCI6MjA5NzcxNDQ3OX0.Z5fCjFdp42-sGcNAEZyD22YQdUxSbktlhy3VCMChAPQ';
+const EDGE_FN_URL   = `${SUPABASE_URL}/functions/v1/extract-catalog`;
+
+// ============================================================
+//  STATE
+// ============================================================
+let images      = [];  // [{id, name, dataUrl, mediaType, base64}]
+let categories  = [];  // [{name, items:[{name,price,description,confidence,notes,option_groups}]}]
+let onlyFlagged = false;
+
+// ============================================================
+//  GATE
+// ============================================================
+function unlock() {
+  const pw = document.getElementById('gate-pw').value;
+  if (pw === GATE_PASSWORD) {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display = '';
+  } else {
+    document.getElementById('gate-err').style.display = '';
+  }
+}
+
+// ============================================================
+//  FILE HANDLING
+// ============================================================
+async function handleFiles(fileList) {
+  const files = Array.from(fileList);
+  for (const file of files) {
+    try {
+      if (file.type.startsWith('image/')) {
+        const dataUrl = await readAsDataURL(file);
+        const match = dataUrl.match(/^data:(.*?);base64,(.*)$/);
+        if (!match) throw new Error('μη έγκυρη εικόνα');
+        const id = 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+        images.push({ id, name: file.name, dataUrl, mediaType: match[1], base64: match[2] });
+        renderThumbs();
+      } else if (/\.docx$/i.test(file.name)) {
+        const buf  = await readAsArrayBuffer(file);
+        const mod  = await import('https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js');
+        const out  = await mod.default.extractRawText({ arrayBuffer: buf });
+        appendText(file.name, out.value);
+      } else if (/\.(xlsx|xls)$/i.test(file.name)) {
+        const buf  = await readAsArrayBuffer(file);
+        const XLSX = await import('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/xlsx.mjs');
+        const wb   = XLSX.read(buf, { type: 'array' });
+        let out = '';
+        wb.SheetNames.forEach(sn => { out += `\n## Sheet: ${sn}\n` + XLSX.utils.sheet_to_csv(wb.Sheets[sn]); });
+        appendText(file.name, out);
+      } else if (/\.txt$/i.test(file.name) || file.type === 'text/plain') {
+        const text = await readAsText(file);
+        appendText(file.name, text);
+      } else if (/\.pdf$/i.test(file.name)) {
+        showUploadError(`PDF "${file.name}" δεν υποστηρίζεται ακόμα. Στείλε screenshot ή εξαγωγή κειμένου.`);
+      } else {
+        showUploadError(`Άγνωστος τύπος: ${file.name}`);
+      }
+    } catch (e) { showUploadError(`${file.name}: ${e.message}`); }
+  }
+  updateExtractBtn();
+  document.getElementById('file-input').value = '';
+}
+
+function appendText(name, text) {
+  const ta = document.getElementById('menu-text');
+  ta.value = (ta.value ? ta.value + '\n\n' : '') + `[Αρχείο: ${name}]\n` + text;
+}
+function readAsDataURL(file) {
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = ()=>res(r.result); r.onerror = ()=>rej(new Error('read error')); r.readAsDataURL(file); });
+}
+function readAsArrayBuffer(file) {
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = ()=>res(r.result); r.onerror = ()=>rej(new Error('read error')); r.readAsArrayBuffer(file); });
+}
+function readAsText(file) {
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = ()=>res(r.result); r.onerror = ()=>rej(new Error('read error')); r.readAsText(file, 'UTF-8'); });
+}
+
+function renderThumbs() {
+  const el = document.getElementById('thumbs');
+  el.innerHTML = images.map(img => `
+    <div class="thumb">
+      <img src="${img.dataUrl}" alt="${img.name}">
+      <button class="thumb-remove" onclick="removeImage('${img.id}')">✕</button>
+      <div class="thumb-name">${img.name}</div>
+    </div>`).join('');
+}
+function removeImage(id) {
+  images = images.filter(i => i.id !== id);
+  renderThumbs(); updateExtractBtn();
+}
+function showUploadError(msg) {
+  const el = document.getElementById('upload-error');
+  el.style.display = 'flex'; el.textContent = '⚠ ' + msg;
+}
+function updateExtractBtn() {
+  const hasContent = images.length > 0 || document.getElementById('menu-text').value.trim().length > 0;
+  document.getElementById('extract-btn').disabled = !hasContent;
+}
+document.getElementById('menu-text').addEventListener('input', updateExtractBtn);
+
+// Drag and drop
+const dz = document.getElementById('dropzone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); handleFiles(e.dataTransfer.files); });
+
+// ============================================================
+//  VALIDATION LAYER
+// ============================================================
+const SEV = { ok: 0, info: 1, warn: 2, error: 3 };
+
+function validateItem(item) {
+  const issues = [];
+  const ogs = item.option_groups || [];
+
+  if (item.price === null || item.price === undefined) {
+    issues.push({ sev: 'error', code: 'no_price', label: 'Λείπει τιμή' });
+  } else if (typeof item.price === 'number') {
+    if (item.price === 0) issues.push({ sev: 'warn', code: 'zero_price', label: 'Τιμή 0€' });
+    else if (item.price > 80) issues.push({ sev: 'warn', code: 'high_price', label: 'Ασυνήθιστα υψηλή τιμή' });
+  }
+  ogs.forEach(g => {
+    const opts = g.options || [];
+    if (opts.length > 0 && opts.every(o => !o.price_delta))
+      issues.push({ sev: 'warn', code: 'zero_deltas', label: `Επιλογές χωρίς τιμές (${g.title || 'group'})` });
+  });
+  if (item.confidence === 'low') issues.push({ sev: 'warn', code: 'model_low', label: 'Επισημάνθηκε ως αβέβαιο' });
+  if (item.name && /[a-zA-Z]/.test(item.name) && /[α-ωΑ-Ω]/.test(item.name)) {
+    const mixed = item.name.split(/\s+/).find(t => /[a-zA-Z]/.test(t) && /[α-ωΑ-Ω]/.test(t));
+    if (mixed) issues.push({ sev: 'info', code: 'mixed_script', label: 'Ανάμικτο αλφάβητο' });
+  }
+  const maxSev = issues.reduce((m, i) => Math.max(m, SEV[i.sev]), 0);
+  return { issues, maxSev };
+}
+
+function analyzeCatalog(cats) {
+  const r = { items: {}, counts: { error:0, warn:0, info:0, ok:0 }, totalItems:0, totalOptions:0, totalCats: cats.length };
+  cats.forEach((c, ci) => {
+    (c.items || []).forEach((it, ii) => {
+      const v = validateItem(it);
+      r.items[`${ci}.${ii}`] = v;
+      r.totalItems++;
+      (it.option_groups || []).forEach(g => { r.totalOptions += (g.options||[]).length; });
+      if      (v.maxSev === SEV.error) r.counts.error++;
+      else if (v.maxSev === SEV.warn)  r.counts.warn++;
+      else if (v.maxSev === SEV.info)  r.counts.info++;
+      else r.counts.ok++;
+    });
+  });
+  return r;
+}
+
+// ============================================================
+//  EXTRACTION
+// ============================================================
+async function runExtraction() {
+  const btn = document.getElementById('extract-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin">↻</span> Εξαγωγή...';
+  document.getElementById('upload-error').style.display = 'none';
+
+  try {
+    const storeName = document.getElementById('store-name').value.trim();
+    const text = document.getElementById('menu-text').value.trim();
+
+    const body = {
+      storeName,
+      text,
+      images: images.map(({ mediaType, base64 }) => ({ mediaType, base64 }))
+    };
+
+    const resp = await fetch(EDGE_FN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
+      body: JSON.stringify(body)
+    });
+
+    const data = await resp.json();
+    if (!resp.ok || data.error) throw new Error(data.error || `HTTP ${resp.status}`);
+    if (!data.categories) throw new Error('Μη αναμενόμενο schema στην απάντηση.');
+
+    categories = data.categories;
+    showResults();
+  } catch (e) {
+    document.getElementById('upload-error').style.display = 'flex';
+    document.getElementById('upload-error').textContent = '⚠ Σφάλμα: ' + e.message;
+    btn.disabled = false;
+    btn.textContent = 'Εξαγωγή καταλόγου';
+  }
+}
+
+// ============================================================
+//  RESULTS RENDER
+// ============================================================
+let analysis = {};
+let collapsedCats = {};
+
+function showResults() {
+  document.getElementById('upload-section').style.display = 'none';
+  document.getElementById('results-section').style.display = '';
+  renderResults();
+}
+
+function renderResults() {
+  analysis = analyzeCatalog(categories);
+  renderSummary();
+  renderCatalog();
+}
+
+function renderSummary() {
+  document.getElementById('s-cats').textContent  = analysis.totalCats;
+  document.getElementById('s-items').textContent = analysis.totalItems;
+  document.getElementById('s-opts').textContent  = analysis.totalOptions;
+
+  const chips = document.getElementById('health-chips');
+  chips.innerHTML = '';
+  if (analysis.counts.error) chips.innerHTML += chip('error', analysis.counts.error, 'με σφάλμα (λείπει τιμή)');
+  if (analysis.counts.warn)  chips.innerHTML += chip('warn',  analysis.counts.warn,  'προς έλεγχο');
+  if (analysis.counts.info)  chips.innerHTML += chip('info',  analysis.counts.info,  'μικρή σημείωση');
+  if (analysis.counts.ok)    chips.innerHTML += chip('ok',    analysis.counts.ok,    'εντάξει');
+}
+
+function chip(sev, n, label) {
+  const icons = { error:'⚠', warn:'▲', info:'ℹ', ok:'✓' };
+  return `<span class="chip ${sev}">${icons[sev]} ${n} ${label}</span>`;
+}
+
+function renderCatalog() {
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  const root = document.getElementById('catalog-root');
+  root.innerHTML = '';
+
+  categories.forEach((cat, ci) => {
+    const items = cat.items || [];
+    const visItems = items.filter((it, ii) => {
+      const v = analysis.items[`${ci}.${ii}`] || { issues:[], maxSev:0 };
+      if (onlyFlagged && v.maxSev < SEV.warn) return false;
+      if (!q) return true;
+      return (it.name||'').toLowerCase().includes(q) || (it.description||'').toLowerCase().includes(q);
+    });
+    if ((onlyFlagged || q) && visItems.length === 0) return;
+
+    const flagged = items.filter((_,ii) => (analysis.items[`${ci}.${ii}`]?.maxSev||0) >= SEV.warn).length;
+    const collapsed = collapsedCats[ci];
+
+    const block = document.createElement('div');
+    block.className = 'cat-block';
+    block.innerHTML = `
+      <div class="cat-header ${collapsed ? 'collapsed' : ''}" onclick="toggleCat(${ci})">
+        <div class="cat-header-left">
+          <span class="cat-chevron">${collapsed ? '▶' : '▼'}</span>
+          <input class="cat-name-input" value="${esc(cat.name)}" onclick="event.stopPropagation()"
+            oninput="updateCatName(${ci}, this.value)">
+          <span class="cat-count">(${items.length})</span>
+          ${flagged ? `<span class="cat-flag">▲ ${flagged}</span>` : ''}
+        </div>
+        <div class="cat-actions">
+          <button class="icon-btn" title="Προσθήκη προϊόντος" onclick="event.stopPropagation();addItem(${ci})">+</button>
+          <button class="icon-btn" onclick="event.stopPropagation();removeCategory(${ci})" title="Διαγραφή κατηγορίας">🗑</button>
+        </div>
+      </div>`;
+
+    if (!collapsed) {
+      const body = document.createElement('div');
+      body.className = 'cat-body';
+
+      if (visItems.length === 0) {
+        body.innerHTML = '<div class="empty">Καμία εγγραφή με τα τρέχοντα φίλτρα.</div>';
+      } else {
+        // find original indices
+        const visFull = items.map((it, ii) => ({ it, ii, v: analysis.items[`${ci}.${ii}`] || { issues:[], maxSev:0 } }))
+          .filter(({ it, v }) => {
+            if (onlyFlagged && v.maxSev < SEV.warn) return false;
+            if (!q) return true;
+            return (it.name||'').toLowerCase().includes(q) || (it.description||'').toLowerCase().includes(q);
+          });
+        visFull.forEach(({ it: item, ii, v }) => {
+          body.appendChild(buildItemRow(ci, ii, item, v));
+        });
+      }
+      block.appendChild(body);
+    }
+
+    root.appendChild(block);
+  });
+}
+
+function buildItemRow(ci, ii, item, v) {
+  const sevKey = v.maxSev === SEV.error ? 'error' : v.maxSev === SEV.warn ? 'warn' : v.maxSev === SEV.info ? 'info' : '';
+  const row = document.createElement('div');
+  row.className = 'item-row' + (sevKey ? ` sev-${sevKey}` : '');
+
+  const ogs = item.option_groups || [];
+  const optCount = ogs.reduce((a, g) => a + (g.options||[]).length, 0);
+  const isMissing = item.price === null || item.price === undefined;
+
+  const badgesHtml = v.issues.map(iss => {
+    const icons = { error:'⚠', warn:'▲', info:'ℹ' };
+    return `<span class="badge ${iss.sev}">${icons[iss.sev]||''} ${iss.label}</span>`;
+  }).join('');
+
+  const optsHtml = optCount > 0 ? `
+    <button class="opts-toggle" onclick="toggleOpts(this)">
+      ⊞ ${optCount} επιλογές σε ${ogs.length} group${ogs.length>1?'s':''} ▾
+    </button>
+    <div class="opts-body" style="display:none;">
+      ${ogs.map(g => `
+        <div class="opt-group">
+          <div class="opt-group-title">
+            ${esc(g.title)}
+            <span class="opt-type-badge ${g.type==='required_single'?'required':'optional'}">
+              ${g.type==='required_single'?'radio · 1 επιλογή':'checkbox · πολλαπλές'}
+            </span>
+          </div>
+          <div class="opt-pills">
+            ${(g.options||[]).map(o => `<span class="opt-pill">${esc(o.name)}${o.price_delta?' +'+o.price_delta+'€':''}</span>`).join('')}
+          </div>
+        </div>`).join('')}
+    </div>` : '';
+
+  row.innerHTML = `
+    <div class="item-main">
+      <div class="item-left">
+        <input class="item-name-input" value="${esc(item.name||'')}"
+          oninput="updateItemField(${ci},${ii},'name',this.value)">
+        ${item.description ? `<div class="item-desc">${esc(item.description)}</div>` : ''}
+        ${v.issues.length ? `<div class="badges">${badgesHtml}</div>` : ''}
+        ${item.notes ? `<div class="item-notes">ℹ <span>${esc(item.notes)}</span></div>` : ''}
+        ${optsHtml}
+      </div>
+      <div class="item-right">
+        ${sevKey === 'error' || sevKey === 'warn' ? `<button class="resolve-btn" title="Σήμανε ως ελεγμένο" onclick="markResolved(${ci},${ii})">✓</button>` : ''}
+        <div class="price-wrap">
+          <input class="price-input ${isMissing?'missing':''}" type="number" step="0.01"
+            value="${item.price ?? ''}" placeholder="—"
+            oninput="updateItemField(${ci},${ii},'price',this.value===''?null:parseFloat(this.value))">
+          <span class="price-eur">€</span>
+        </div>
+        <button class="icon-btn" onclick="removeItem(${ci},${ii})" title="Διαγραφή">🗑</button>
+      </div>
+    </div>`;
+  return row;
+}
+
+function toggleOpts(btn) {
+  const body = btn.nextElementSibling;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  btn.innerHTML = btn.innerHTML.replace(open ? '▴' : '▾', open ? '▾' : '▴');
+}
+
+// ============================================================
+//  MUTATIONS
+// ============================================================
+function updateCatName(ci, val)        { categories[ci].name = val; }
+function updateItemField(ci, ii, f, v) { categories[ci].items[ii][f] = v; renderResults(); }
+function markResolved(ci, ii)          { categories[ci].items[ii].confidence = 'high'; renderResults(); }
+function toggleCat(ci)                 { collapsedCats[ci] = !collapsedCats[ci]; renderCatalog(); }
+function removeCategory(ci)            { categories.splice(ci, 1); renderResults(); }
+function removeItem(ci, ii)            { categories[ci].items.splice(ii, 1); renderResults(); }
+
+function addCategory() {
+  categories.push({ name: 'Νέα κατηγορία', items: [] });
+  renderResults();
+}
+function addItem(ci) {
+  categories[ci].items = categories[ci].items || [];
+  categories[ci].items.push({ name: 'Νέο προϊόν', price: null, description: null, confidence: 'low', notes: 'Προστέθηκε χειροκίνητα', option_groups: [] });
+  renderResults();
+}
+
+function toggleFilter() {
+  onlyFlagged = !onlyFlagged;
+  const btn = document.getElementById('filter-btn');
+  btn.classList.toggle('active', onlyFlagged);
+  btn.textContent = onlyFlagged ? '▼ Μόνο προς έλεγχο' : '▼ Όλα τα προϊόντα';
+  renderCatalog();
+}
+
+// ============================================================
+//  JSON / EXPORT
+// ============================================================
+function toggleJson() {
+  const wrap = document.getElementById('json-viewer-wrap');
+  const show = wrap.style.display === 'none';
+  wrap.style.display = show ? '' : 'none';
+  if (show) document.getElementById('json-viewer').textContent = JSON.stringify({ store: document.getElementById('store-name').value||null, categories }, null, 2);
+}
+
+function exportJson() {
+  const storeName = document.getElementById('store-name').value || 'catalog';
+  const blob = new Blob([JSON.stringify({ store: storeName, categories }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = storeName.replace(/\s+/g,'_') + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ============================================================
+//  SAVE TO SUPABASE
+// ============================================================
+async function saveToDB() {
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Αποθήκευση...';
+
+  try {
+    const storeName = document.getElementById('store-name').value.trim() || null;
+    const headers = { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Prefer': 'return=representation' };
+    const sb = (path, body) => fetch(`${SUPABASE_URL}/rest/v1/${path}`, { method:'POST', headers, body: JSON.stringify(body) }).then(r => r.json());
+
+    // 1. session
+    const [session] = await sb('sessions', { store_name: storeName, status: 'reviewed' });
+    const sessionId = session.id;
+
+    // 2. categories → items → option_groups → options
+    for (let ci = 0; ci < categories.length; ci++) {
+      const cat = categories[ci];
+      const [catRow] = await sb('categories', { session_id: sessionId, name: cat.name, sort_order: ci });
+      for (let ii = 0; ii < (cat.items||[]).length; ii++) {
+        const it = cat.items[ii];
+        const [itemRow] = await sb('items', { category_id: catRow.id, name: it.name, price: it.price, description: it.description, confidence: it.confidence, notes: it.notes, sort_order: ii });
+        for (let gi = 0; gi < (it.option_groups||[]).length; gi++) {
+          const g = it.option_groups[gi];
+          const [grpRow] = await sb('option_groups', { item_id: itemRow.id, title: g.title, type: g.type, sort_order: gi });
+          for (let oi = 0; oi < (g.options||[]).length; oi++) {
+            const opt = g.options[oi];
+            await sb('options', { option_group_id: grpRow.id, name: opt.name, price_delta: opt.price_delta||0, sort_order: oi });
+          }
+        }
+      }
+    }
+
+    toast('✓ Αποθηκεύτηκε στη βάση δεδομένων!', 'ok');
+    btn.textContent = '✓ Αποθηκεύτηκε';
+  } catch (e) {
+    toast('⚠ Σφάλμα αποθήκευσης: ' + e.message, 'err');
+    btn.disabled = false;
+    btn.textContent = '💾 Αποθήκευση στη βάση';
+  }
+}
+
+// ============================================================
+//  RESET
+// ============================================================
+function resetAll() {
+  images = []; categories = []; collapsedCats = {}; onlyFlagged = false;
+  document.getElementById('store-name').value = '';
+  document.getElementById('menu-text').value = '';
+  document.getElementById('thumbs').innerHTML = '';
+  document.getElementById('upload-error').style.display = 'none';
+  document.getElementById('extract-btn').disabled = true;
+  document.getElementById('extract-btn').textContent = 'Εξαγωγή καταλόγου';
+  document.getElementById('results-section').style.display = 'none';
+  document.getElementById('upload-section').style.display = '';
+  document.getElementById('json-viewer-wrap').style.display = 'none';
+  document.getElementById('search-input').value = '';
+  document.getElementById('filter-btn').classList.remove('active');
+  document.getElementById('filter-btn').textContent = '▼ Όλα τα προϊόντα';
+  document.getElementById('save-btn').disabled = false;
+  document.getElementById('save-btn').textContent = '💾 Αποθήκευση στη βάση';
+}
+
+// ============================================================
+//  UTILS
+// ============================================================
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  setTimeout(() => { el.className = ''; }, 3500);
+}
+</script>
+</body>
+</html>
